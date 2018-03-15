@@ -23,7 +23,10 @@ import java.nio.charset.MalformedInputException;
 import javax.net.ssl.SSLHandshakeException;
 
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.function.Consumer;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -43,6 +46,8 @@ abstract class CordovaHttp {
     private static AtomicBoolean acceptAllCerts = new AtomicBoolean(false);
     private static AtomicBoolean validateDomainName = new AtomicBoolean(true);
     private static AtomicBoolean disableRedirect = new AtomicBoolean(false);
+    // List of request interceptors
+    private static Deque<Consumer<HttpRequest>> requestInterceptors = new LinkedList<Consumer<HttpRequest>>();
 
     private String urlString;
     private Object params;
@@ -62,6 +67,21 @@ abstract class CordovaHttp {
         this.headers = headers;
         this.timeoutInMilliseconds = timeout;
         this.callbackContext = callbackContext;
+    }
+
+    // Add a request interceptor to the list of request interceptors
+    public static synchronized void addRequestInterceptor(Consumer<HttpRequest> requestInterceptor) {
+        if (requestInterceptor == null) {
+            throw new NullPointerException("Request interceptor must not be null");
+        }
+        CordovaHttp.requestInterceptors.addFirst(requestInterceptor);
+    }
+
+    // Apply all request interceptors
+    public static synchronized void applyRequestInterceptors(HttpRequest request) {
+        for (Consumer<HttpRequest> requestInterceptor : requestInterceptors) {
+            requestInterceptor.accept(request);
+        }
     }
 
     public static void enableSSLPinning(boolean enable) {
@@ -280,6 +300,9 @@ abstract class CordovaHttp {
 
     protected void returnResponseObject(HttpRequest request) throws HttpRequestException {
       try {
+        // Call interceptors to allow "last-minute" changes before performing the request
+        this.applyRequestInterceptors(request);
+
         JSONObject response = new JSONObject();
         int code = request.code();
         AtomicReference<ByteBuffer> rawOutputReference = new AtomicReference<ByteBuffer>();
