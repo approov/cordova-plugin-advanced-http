@@ -10,7 +10,6 @@ import java.io.InputStream;
 import java.security.GeneralSecurityException;
 
 import java.util.ArrayList;
-import java.util.function.Consumer;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
@@ -130,11 +129,6 @@ public class CordovaHttpPlugin extends CordovaPlugin {
         }
         return true;
     }
-
-    // Add a request interceptor to the list of request interceptors
-    public static final void addRequestInterceptor(Consumer<HttpRequest> requestInteceptor) {
-        CordovaHttp.addRequestInterceptor(requestInteceptor);
-    };
 
     private void enableSSLPinning(boolean enable) throws GeneralSecurityException, IOException {
         if (enable) {
