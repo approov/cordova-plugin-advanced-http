@@ -10,7 +10,6 @@ import java.io.InputStream;
 import java.security.GeneralSecurityException;
 
 import java.util.ArrayList;
-import java.util.function.Consumer;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
@@ -131,8 +130,11 @@ public class CordovaHttpPlugin extends CordovaPlugin {
         return true;
     }
 
+    // Public interface type for request interceptors
+    public interface IHttpRequestInterceptor extends CordovaHttp.IHttpRequestInterceptor {};
+
     // Add a request interceptor to the list of request interceptors
-    public static final void addRequestInterceptor(Consumer<HttpRequest> requestInteceptor) {
+    public static final void addRequestInterceptor(IHttpRequestInterceptor requestInteceptor) {
         CordovaHttp.addRequestInterceptor(requestInteceptor);
     };
 

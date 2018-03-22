@@ -24,7 +24,6 @@ import javax.net.ssl.SSLHandshakeException;
 
 import java.util.ArrayList;
 import java.util.Deque;
-import java.util.function.Consumer;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -47,7 +46,7 @@ abstract class CordovaHttp {
     private static AtomicBoolean validateDomainName = new AtomicBoolean(true);
     private static AtomicBoolean disableRedirect = new AtomicBoolean(false);
     // List of request interceptors
-    private static Deque<Consumer<HttpRequest>> requestInterceptors = new LinkedList<Consumer<HttpRequest>>();
+    private static Deque<IHttpRequestInterceptor> requestInterceptors = new LinkedList<IHttpRequestInterceptor>();
 
     private String urlString;
     private Object params;
@@ -69,8 +68,13 @@ abstract class CordovaHttp {
         this.callbackContext = callbackContext;
     }
 
+    // Interface type for request interceptors
+    public interface IHttpRequestInterceptor {
+        public void accept(HttpRequest request);
+    }
+
     // Add a request interceptor to the list of request interceptors
-    public static synchronized void addRequestInterceptor(Consumer<HttpRequest> requestInterceptor) {
+    public static synchronized void addRequestInterceptor(IHttpRequestInterceptor requestInterceptor) {
         if (requestInterceptor == null) {
             throw new NullPointerException("Request interceptor must not be null");
         }
@@ -79,7 +83,7 @@ abstract class CordovaHttp {
 
     // Apply all request interceptors
     public static synchronized void applyRequestInterceptors(HttpRequest request) {
-        for (Consumer<HttpRequest> requestInterceptor : requestInterceptors) {
+        for (IHttpRequestInterceptor requestInterceptor : requestInterceptors) {
             requestInterceptor.accept(request);
         }
     }
