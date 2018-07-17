@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.11.0.1
+
+- Fix PATCH, POST, PUT: ensure the interceptor call always happens before the request is sent.
+
 ## 1.11.0
 
 - Feature #77: allow overriding global settings for each single request

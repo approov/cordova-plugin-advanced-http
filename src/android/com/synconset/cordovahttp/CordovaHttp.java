@@ -252,6 +252,9 @@ abstract class CordovaHttp {
       request.acceptCharset(ACCEPTED_CHARSETS);
       request.headers(this.getHeadersMap());
       request.uncompress(true);
+
+      // Call interceptors to allow "last-minute" changes before performing the request
+      this.applyRequestInterceptors(request);
     }
 
     protected void prepareRequestBody(HttpRequest request) throws JSONException, Exception {
@@ -304,9 +307,6 @@ abstract class CordovaHttp {
 
     protected void returnResponseObject(HttpRequest request) throws HttpRequestException {
       try {
-        // Call interceptors to allow "last-minute" changes before performing the request
-        this.applyRequestInterceptors(request);
-
         JSONObject response = new JSONObject();
         int code = request.code();
         AtomicReference<ByteBuffer> rawOutputReference = new AtomicReference<ByteBuffer>();
